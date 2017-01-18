@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NWebDav.Server</id>
+    <version>0.0.1.0</version>
+    <title>Deadlock detection library</title>
+    <authors>Ramon de Klein &lt;mail@ramondeklein.nl&gt;</authors>
+    <description>The deadlock detection library can be used to track down async/await related deadlocks in your code with minimal overhead and effort.</description>
+    <licenseUrl>http://www.gnu.org/licenses/lgpl.html</licenseUrl>
+    <projectUrl>https://github.com/ramondeklein/deadlockdetection</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright 2017 Ramon de Klein &lt;mail@ramondeklein.nl&gt;</copyright>
+    <tags>C# .NET deadlock async await</tags>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="bin\Release\DeadlockDetection.*" target="lib\net45" />
+  </files>
+</package>
