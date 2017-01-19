@@ -117,7 +117,7 @@ Although it might be possible that the application will not deadlock, this
 library will still raise the `DeadlockException`. It might be considered a bug,
 but you might also rethink your design. Mixing blocking calls and asynchronous
 calls on the same synchronization context is a bit awkward and reduces the
-asynchronous behavior of your application (and therefore reduce scabalibility),
+asynchronous behavior of your application (and therefore reduce scalability),
 so you might even consider this a feature that you'll be notified of these
 circumstances :-)
 
@@ -180,7 +180,7 @@ request. It provides access to the current HTTP context and can be used to
 flow the principal through the request handler code.
 
 It's important to wrap the proper synchronization context, so to enable The
-deadlock detection it muse be enabled in the middleware.
+deadlock detection it must be enabled in the middleware.
 
 ASP.NET applications using a `global.asax` file the following lines of code
 should be added to the file:
