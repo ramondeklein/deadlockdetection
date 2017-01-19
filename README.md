@@ -196,3 +196,77 @@ should be added to the file:
 ```
 This will enable deadlock detection for each request. When the request has
 finished, the synchronization context will be reset again.
+
+### Integration in WinForms applications
+Integrating in a WinForms application is pretty easy and relative
+non-intrusive. The typical `Main` method of a WinForm application looks like
+this:
+```
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        Application.Run(new Form1());
+    }
+```
+
+The deadlock detection synchronization context only needs to be installed on
+the UI thread. The WinForms library automatically installs the 
+`WindowsFormsSynchronizationContext` during the creation of the first Windows
+control. Because the deadlock detection synchronization context needs to wrap
+the synchronization context, we need to make sure the synchronization context
+is created.
+
+We can simply create a dummy control, which will install the proper
+synchronization context. We can then wrap it and run the actual application.
+The `Main` method will look something like this:
+
+```
+    static void Main()
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        new Control();
+        using (DeadlockDetection.Enable.DeadlockDetection())
+        {
+            Application.Run(new Form1());
+        }
+    }
+```
+
+This will enable automatic deadlock detection on the GUI thread.
+
+### Integration in WPF applications
+I am currently investigating how to inject the deadlock detection
+synchronization context in a non-intrusive way for WPF applications. the
+difficulty is that for each message that is processed internally a new
+`DispatcherSynchronizationContext` is created. This makes it more
+difficult to inject it globally in your application.
+
+You can use the local detection method (described below) if you want to
+detect deadlocks in a part of your code.
+
+### What about other applications?
+Normal console applications or Windows services don't have a synchronization
+context, so they will never generate a deadlock situation. So i is not necessary
+to have deadlock detection for these kind of applications.
+
+### Local detection
+If you don't want to enable the deadlock detection for your entire application,
+but only for a certain point (i.e. during debugging) you can simply wrap the
+synchronization context.
+
+Suppose you know you have a deadlock when clicking a certain button, then you
+can use the following code:
+
+```
+    private void OnButtonClicked(object sender, EventArgs e)
+    {
+        using (DeadlockDetection.Enable.DeadlockDetection())
+        {
+            // your code...
+        }    
+	}
+```
+
+Within the using block the deadlocks will be detected.
