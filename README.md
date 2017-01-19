@@ -62,12 +62,12 @@ asynchronous `TestAsync` method and will block until it completes. However, the
 delayed task needs to complete on the thread that is now blocked. We have
 encountered a deadlock situation.
 
-The deadlock detection library can be used and it requires two changes:
 
-1. At the top-level you need to wrap the synchronization context and enable
-   deadlock detection.
-2. You need to replace the `Wait` and `Result` invocations with their *safe*
-   counterparts from the DeadlockDetection library.
+The only thing that you need to do is to install the
+`DeadlockDetectionSynchronizationContext` on your current thread. It's best
+to use the `Enable.DeadlockDetection` method for this purpose. If deadlock
+detection is disabled (i.e. for production systems) then it makes sure it
+has zero side-effects and no performance penalty.
 
 So this code will now look like this:
 
@@ -81,7 +81,7 @@ So this code will now look like this:
     {
         using (Enable.DeadlockDetection(DeadlockDetectionMode.AlsoPotentialDeadlocks))
         {
-            TestAsync().SafeWait();
+            TestAsync().Wait();
         }
     }
 ```
@@ -93,13 +93,6 @@ method starts awaiting.
 
 Suppose that you are calling external code or libraries, then deadlocks will
 still be detected. Only the calling code needs to be modified.
-
-## Caveats
-Unfortunately, it is not possible to tap into the existing `Task.Wait` and
-`Task<T>.Result` methods, so you need to replace your calls with their safe
-counterparts. If you don't use these methods, then no (potential) deadlocks
-will be detected. Using the safe methods don't have any overhead when
-deadlock detection is disabled.
 
 ## Settings
 There are some global settings that can be set to change the behavior of the

@@ -26,7 +26,7 @@ namespace DeadlockDetection.SampleApp
             {
                 try
                 {
-                    TestAsync().SafeWait();
+                    TestAsync().Wait();
                 }
                 catch (Exception e)
                 {
