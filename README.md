@@ -131,12 +131,6 @@ This setting specifies if stack traces are generated during the detection of
 blocking operation, the generation of stack traces might affect performance,
 so it is best to disable it when not running in development and/or testing.
 
-### DeadlockDetection.GlobalSettings.BlockingWarningDuration
-The safe deadlock detection methods can also detect long running tasks and
-mark them as potential deadlocks (only when deadlock detection mode is set to
-`AlsoPotentialDeadlocks`). This setting specifies the duration after which
-a warning is emitted to debug output.
-
 ## Under the hood
 The deadlock detection library uses existing facilities in the
 `SynchronizationContext` class to detect deadlocks. That's why I was able to

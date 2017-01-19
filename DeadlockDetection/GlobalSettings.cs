@@ -23,16 +23,5 @@ namespace DeadlockDetection
         /// running inside the debugger and/or DEBUG mode.
         /// </remarks>
         public static bool GenerateStackTraces { get; set; } = false;
-
-        /// <summary>
-        /// Get or sets the duration after which a blocking operation will
-        /// show a warning message about a potential deadlock.
-        /// </summary>
-        /// <remarks>
-        /// This duration is only  used when deadlock detection is enabled,
-        /// but no deadlock synchronization context is enabled. You might
-        /// increase the duration if you have long running tasks.
-        /// </remarks>
-        public static TimeSpan BlockingWarningDuration = TimeSpan.FromSeconds(10);
     }
 }
