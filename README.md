@@ -107,6 +107,20 @@ method starts awaiting.
 Suppose that you are calling external code or libraries, then deadlocks will
 still be detected. Only the calling code needs to be modified.
 
+## Caveat
+The `DeadlockException` will be thrown whenever a continuation methods is
+scheduled while the synchronization context is blocked. It is possible that the
+synchronization context is only blocked for a short duration (i.e. `Sleep`) and
+it is not actually a deadlock situation.
+
+Although it might be possible that the application will not deadlock, this
+library will still raise the `DeadlockException`. It might be considered a bug,
+but you might also rethink your design. Mixing blocking calls and asynchronous
+calls on the same synchronization context is a bit awkward and reduces the
+asynchronous behavior of your application (and therefore reduce scabalibility),
+so you might even consider this a feature that you'll be notified of these
+circumstances :-)
+
 ## Settings
 There are some global settings that can be set to change the behavior of the
 deadlock detection library.
