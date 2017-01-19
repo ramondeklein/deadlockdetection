@@ -62,6 +62,19 @@ asynchronous `TestAsync` method and will block until it completes. However, the
 delayed task needs to complete on the thread that is now blocked. We have
 encountered a deadlock situation.
 
+These situations can be hard to find and to track down. An application may stop
+responding or a service won't respond and it will slowly eat up your system
+resources, because it will use more and more threads.
+
+The DeadlockDetection library can help to track down these issues with minimal
+effort and overhead. The only thing you need to do is to make sure you inject
+a custom synchronization context. This synchronization context will intercept
+all task continuations that have require continuation on the synchronization
+context.
+
+If the synchronization context is blocked, due to a `Wait`, `Result` or other
+blocking operation then it will raise a `DeadlockException` when continuation
+is requested on the blocked thread.
 
 The only thing that you need to do is to install the
 `DeadlockDetectionSynchronizationContext` on your current thread. It's best
@@ -123,3 +136,20 @@ The safe deadlock detection methods can also detect long running tasks and
 mark them as potential deadlocks (only when deadlock detection mode is set to
 `AlsoPotentialDeadlocks`). This setting specifies the duration after which
 a warning is emitted to debug output.
+
+## Under the hood
+The deadlock detection library uses existing facilities in the
+`SynchronizationContext` class to detect deadlocks. That's why I was able to
+implement it without any overhead. It uses the following two techniques:
+
+ 1. When a task is continued on the synchronization context, then the CLR
+    will use the `SynchronizationContext.Post` method to call the continuation
+	method.
+ 2. Synchronization contexts can opt-in to be notified when it blocks (via
+    the `SynchronizationContext.SetWaitNotificationRequired` method). It
+	calls the `SynchronizationContext.Wait` method to block the thread.
+
+The `DeadlockDetectionSynchronizationContext` opts-in for the wait notification
+and sets the `_isBlocked` flag. If the continuation method is invoked via the
+`Post` method of our synchronization context, then it will check if the context
+is currently blocked and if so, it throws the `DeadlockException`.
