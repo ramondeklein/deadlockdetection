@@ -153,3 +153,38 @@ The `DeadlockDetectionSynchronizationContext` opts-in for the wait notification
 and sets the `_isBlocked` flag. If the continuation method is invoked via the
 `Post` method of our synchronization context, then it will check if the context
 is currently blocked and if so, it throws the `DeadlockException`.
+
+## Integrating in your application
+Enabling deadlock detection should be done at the level where the
+synchronization context is known and won't change anymore. I will provide
+several examples on how to integrate it the least intrusive way and maximize
+the effect.
+
+First you start with installing it via NuGet
+
+```
+    Install-Package DeadlockDetection
+```
+
+### Integrating in ASP.NET applications
+ASP.NET applications use a synchronization context that is unique for each
+request. It provides access to the current HTTP context and can be used to
+flow the principal through the request handler code.
+
+It's important to wrap the proper synchronization context, so to enable The
+deadlock detection it muse be enabled in the middleware.
+
+ASP.NET applications using a `global.asax` file the following lines of code
+should be added to the file:
+
+```
+	protected void Application_BeginRequest(object sender, EventArgs e)
+	{
+		// Enable deadlock detection for the request
+		var dispose = DeadlockDetection.Enable.DeadlockDetection();
+		if (dispose != null)
+			HttpContext.Current.AddOnRequestCompleted(context => dispose.Dispose());
+	}
+```
+This will enable deadlock detection for each request. When the request has
+finished, the synchronization context will be reset again.
