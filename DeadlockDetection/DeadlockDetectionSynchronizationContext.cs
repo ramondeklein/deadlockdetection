@@ -38,6 +38,30 @@ namespace DeadlockDetection
             BaseSynchronizationContext.Post(d, state);
         }
 
+        public override void Send(SendOrPostCallback d, object state)
+        {
+            if (BaseSynchronizationContext != null)
+                BaseSynchronizationContext.Send(d, state);
+            else
+                base.Send(d, state);
+        }
+
+        public override void OperationStarted()
+        {
+            if (BaseSynchronizationContext != null)
+                BaseSynchronizationContext.OperationStarted();
+            else
+                base.OperationStarted();
+        }
+
+        public override void OperationCompleted()
+        {
+            if (BaseSynchronizationContext != null)
+                BaseSynchronizationContext.OperationCompleted();
+            else
+                base.OperationCompleted();
+        }
+
         [SecurityCritical, CLSCompliant(false)]
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
