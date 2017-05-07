@@ -62,7 +62,7 @@ namespace DeadlockDetection
                 base.OperationCompleted();
         }
 
-        [SecurityCritical, CLSCompliant(false)]
+        [SecurityCritical]
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
             // We cannot block multiple times at once
