@@ -12,6 +12,7 @@ namespace DeadlockDetection
         private readonly object _sync = new object();
         private bool _isBlocking;
         private StackTrace _blockingStacktrace;
+        private Thread _currentThread;
 
         public DeadlockDetectionSynchronizationContext(SynchronizationContext baseSynchronizationContext)
         {
@@ -26,6 +27,11 @@ namespace DeadlockDetection
 
         public override void Post(SendOrPostCallback d, object state)
         {
+            _currentThread = Thread.CurrentThread;
+
+            if (GlobalSettings.GenerateStackTraces)
+                _blockingStacktrace = new StackTrace();
+
             lock (_sync)
             {
                 // If we are already blocking, then posting to the synchronization
@@ -34,8 +40,15 @@ namespace DeadlockDetection
                     throw new DeadlockException(_blockingStacktrace, BaseSynchronizationContext != null);
             }
 
+            SendOrPostCallback restoreContextCallback = (state2) =>
+            {
+                // Asp.Net resets the sychronization context, so we need to restore it ourselves.
+                SetSynchronizationContext(this);
+                d(state2);
+            };
+
             // Post the actual completion method, so it will be executed
-            BaseSynchronizationContext.Post(d, state);
+            BaseSynchronizationContext.Post(restoreContextCallback, state);
         }
 
         public override void Send(SendOrPostCallback d, object state)
@@ -65,6 +78,12 @@ namespace DeadlockDetection
         [SecurityCritical]
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
+            // If we are waiting from the current thread, we have a deadlock.
+            if (_currentThread == Thread.CurrentThread)
+            {
+                throw new DeadlockException(_blockingStacktrace, BaseSynchronizationContext != null);
+            }
+
             // We cannot block multiple times at once
             Debug.Assert(!_isBlocking);
             try
